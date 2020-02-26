@@ -19,14 +19,20 @@ func NewP2P(username string, serveraddr string) (*P2P, error) {
 		return nil, err
 	}
 
-	caddr, err := net.ResolveTCPAddr("tcp", tcp.GenPort())
+	err = tcp.Do(5, func() error {
+		caddr, err := net.ResolveTCPAddr("tcp", tcp.GenPort())
 
-	s, err := tcp.NewTCPServer(caddr, saddr)
-	if err != nil {
-		return nil, err
-	}
+		s, err := tcp.NewTCPServer(caddr, saddr)
+		if err != nil {
+			return nil, err
+		}
 
-	c, err := tcp.NewTCPClient(username, s)
+		c, err := tcp.NewTCPClient(username, s)
+		if err != nil {
+			return nil, err
+		}
+	})
+
 	if err != nil {
 		return nil, err
 	}
