@@ -14,6 +14,7 @@ type P2P struct {
 
 // NewP2P initialize peer to peer connection
 func NewP2P(username string, serveraddr string) (*P2P, error) {
+	var c *tcp.Client
 	saddr, err := net.ResolveTCPAddr("tcp", serveraddr)
 	if err != nil {
 		return nil, err
@@ -24,13 +25,11 @@ func NewP2P(username string, serveraddr string) (*P2P, error) {
 
 		s, err := tcp.NewTCPServer(caddr, saddr)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		c, err := tcp.NewTCPClient(username, s)
-		if err != nil {
-			return nil, err
-		}
+		c, err = tcp.NewTCPClient(username, s)
+		return err
 	})
 
 	if err != nil {
