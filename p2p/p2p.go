@@ -1,8 +1,9 @@
 package p2p
 
 import (
-	"dmnet/tcp"
 	"net"
+
+	"github.com/macadrich/dmnet/tcp"
 )
 
 // P2P represent client and server address

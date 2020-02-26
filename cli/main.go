@@ -1,12 +1,13 @@
 package main
 
 import (
-	"dmnet/p2p"
-	"dmnet/tcp"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/macadrich/dmnet/p2p"
+	"github.com/macadrich/dmnet/tcp"
 )
 
 func rndzServer() {
