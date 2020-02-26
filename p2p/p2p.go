@@ -14,24 +14,19 @@ type P2P struct {
 
 // NewP2P initialize peer to peer connection
 func NewP2P(username string, serveraddr string) (*P2P, error) {
-	var c *tcp.Client
 	saddr, err := net.ResolveTCPAddr("tcp", serveraddr)
 	if err != nil {
 		return nil, err
 	}
 
-	err = tcp.Do(5, func() error {
-		caddr, err := net.ResolveTCPAddr("tcp", tcp.GenPort())
+	caddr, err := net.ResolveTCPAddr("tcp", tcp.GenPort())
 
-		s, err := tcp.NewTCPServer(caddr, saddr)
-		if err != nil {
-			return err
-		}
+	s, err := tcp.NewTCPServer(caddr, saddr)
+	if err != nil {
+		return nil, err
+	}
 
-		c, err = tcp.NewTCPClient(username, s)
-		return err
-	})
-
+	c, err := tcp.NewTCPClient(username, s)
 	if err != nil {
 		return nil, err
 	}

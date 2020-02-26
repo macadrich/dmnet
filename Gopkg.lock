@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/macadrich/dmnet"
   packages = [".","p2p","tcp"]
-  revision = "b3a839fb7428eab1a60e358c87d52961244ee9a6"
+  revision = "52723d41935e8c96906d1e0ac4f95626862df2cd"
 
 [solve-meta]
   analyzer-name = "dep"
