@@ -1,9 +1,10 @@
 package tcp
 
 import (
-	"dmnet"
 	"errors"
 	"net"
+
+	"github.com/macadrich/dmnet"
 )
 
 // New network factory mode
