@@ -35,7 +35,9 @@ func (s *Server) sender() {
 
 	conn, err := net.Dial("tcp", s.sAddr.String())
 	if err != nil {
-		log.Fatal(err)
+		log.Print("can't connect to server!")
+		log.Printf("%v", err)
+		return
 	}
 	defer conn.Close()
 
@@ -60,7 +62,7 @@ func (s *Server) Addr() string {
 
 // Listen -
 func (s *Server) Listen() {
-	log.Println("listening...")
+	log.Println("Listening on", s.Addr())
 	go s.sender()
 	for {
 
