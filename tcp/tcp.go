@@ -1,11 +1,11 @@
 package tcp
 
 import (
+	"dmnet/util"
 	"errors"
 	"net"
 
 	"github.com/macadrich/dmnet"
-	"github.com/macadrich/dmnet/tcp"
 )
 
 // New network factory mode
@@ -33,14 +33,14 @@ func New(mode, address string) (dmnet.RNDZServer, error) {
 			return nil, err
 		}
 
-		caddr, err := net.ResolveTCPAddr("tcp", tcp.GenPort())
+		caddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
 
-		s, err := tcp.NewTCPServer(caddr, saddr)
+		s, err := NewTCPServer(caddr, saddr)
 		if err != nil {
 			return nil, err
 		}
 
-		client, err := tcp.NewTCPClient(username, s)
+		client, err := NewTCPClient(username, s)
 		if err != nil {
 			return nil, err
 		}
