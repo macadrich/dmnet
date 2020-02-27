@@ -1,8 +1,9 @@
 package tcp
 
 import (
-	"dmnet/model"
 	"net"
+
+	"github.com/macadrich/dmnet/model"
 
 	"github.com/macadrich/dmnet/tcp"
 )

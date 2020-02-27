@@ -3,13 +3,27 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:69c4002bbbfaa802010b1d53a7cc04e63bebd7b0b4c2778399139593679d6e61"
   name = "github.com/macadrich/dmnet"
-  packages = [".","p2p","tcp"]
-  revision = "52723d41935e8c96906d1e0ac4f95626862df2cd"
+  packages = [
+    ".",
+    "model",
+    "p2p",
+    "tcp",
+    "util",
+  ]
+  pruneopts = ""
+  revision = "b137930a41a87d91225c8c87fabf4c5ca1a6bf3d"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b90cbb7c0a1e1ed18a0a2f4be06ee107d01d6f26a935cfd71c7ab59a035a59b2"
+  input-imports = [
+    "github.com/macadrich/dmnet",
+    "github.com/macadrich/dmnet/model",
+    "github.com/macadrich/dmnet/p2p",
+    "github.com/macadrich/dmnet/tcp",
+    "github.com/macadrich/dmnet/util",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

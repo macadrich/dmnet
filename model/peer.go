@@ -1,9 +1,10 @@
 package model
 
 import (
-	"dmnet/util"
 	"encoding/base64"
 	"net"
+
+	"github.com/macadrich/dmnet/util"
 )
 
 // Endpoint -

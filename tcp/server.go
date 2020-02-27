@@ -1,13 +1,14 @@
 package tcp
 
 import (
-	"dmnet/model"
-	"dmnet/util"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"sync"
+
+	"github.com/macadrich/dmnet/model"
+	"github.com/macadrich/dmnet/util"
 )
 
 // Server -

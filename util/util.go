@@ -33,6 +33,7 @@ func GenPort() string {
 	return ":" + strconv.Itoa(rand.Intn(65535-10000)+10000)
 }
 
+// GetLocalIP -
 func GetLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
