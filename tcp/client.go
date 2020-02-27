@@ -4,8 +4,6 @@ import (
 	"net"
 
 	"github.com/macadrich/dmnet/model"
-
-	"github.com/macadrich/dmnet/tcp"
 )
 
 // Client base client
@@ -55,7 +53,7 @@ func (c *Client) StartP2P() error {
 	go s.Listen()
 
 	// send greeting message to server
-	sConn.Send(&tcp.Message{
+	sConn.Send(&model.Message{
 		Type:    "connect",
 		Content: p2p.GetServer().Addr(),
 	})
