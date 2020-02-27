@@ -1,4 +1,4 @@
-package tcp
+package util
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 )
 
 // SendMessage -
-func SendMessage(msg *Message) ([]byte, error) {
+func SendMessage(msg interface{}) ([]byte, error) {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		return nil, err
@@ -18,8 +18,8 @@ func SendMessage(msg *Message) ([]byte, error) {
 }
 
 // RecvMessage -
-func RecvMessage(recv []byte) (*Message, error) {
-	msg := &Message{}
+func RecvMessage(msg interface{}, recv []byte) (interface{}, error) {
+	// msg := &Message{}
 	err := json.Unmarshal(recv, msg)
 	if err != nil {
 		log.Print(err)
@@ -33,7 +33,7 @@ func GenPort() string {
 	return ":" + strconv.Itoa(rand.Intn(65535-10000)+10000)
 }
 
-func getLocalIP() string {
+func GetLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return ""

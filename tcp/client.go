@@ -1,55 +1,104 @@
 package tcp
 
+import (
+	"dmnet/model"
+	"net"
+
+	"github.com/macadrich/dmnet/tcp"
+)
+
+// Client base client
+type Client struct {
+	server             model.IFServer
+	self               *model.Peer
+	peer               *model.Peer
+	sAddr              *net.TCPAddr
+	sConn              model.Conn // server TCPConn
+	pConn              model.Conn // peer TCPConn
+	isP2P              bool
+	registeredCallback func(model.IFClient)
+	messageCallback    func(model.IFClient, string)
+}
+
 // NewTCPClient initialize with username
 // for client and server as p2p
-func NewTCPClient(username string, server IFServer) (*Client, error) {
+func NewTCPClient(username string, server model.IFServer) (*Client, error) {
 	// set username peer
-	self := &Peer{Username: username}
+	self := &model.Peer{Username: username}
 
 	// initialize peer
-	p := &Peer{}
+	p := &model.Peer{}
 
 	return &Client{
 		self:               self,
 		peer:               p,
 		server:             server,
-		registeredCallback: func(IFClient) {},
-		messageCallback:    func(IFClient, string) {},
+		registeredCallback: func(model.IFClient) {},
+		messageCallback:    func(model.IFClient, string) {},
 	}, nil
 }
 
+// StartP2P start peer to peer connection
+func (c *Client) StartP2P() error {
+	s := p2p.GetServer()
+
+	sConn, err := s.CreateConn(c.sAddr)
+	if err != nil {
+		return err
+	}
+
+	// set conn
+	p2p.SetServerConn(sConn)
+
+	// start listening
+	go s.Listen()
+
+	// send greeting message to server
+	sConn.Send(&tcp.Message{
+		Type:    "connect",
+		Content: p2p.GetServer().Addr(),
+	})
+
+	return nil
+}
+
+// P2PEnable yes to set p2p network, otherwise as a rdv server
+func (c *Client) P2PEnable(mode bool) {
+	c.isP2P = mode
+}
+
 // OnRegistered -
-func (c *Client) OnRegistered(f func(IFClient)) {
+func (c *Client) OnRegistered(f func(model.IFClient)) {
 	c.registeredCallback = f
 }
 
 // OnMessage -
-func (c *Client) OnMessage(f func(IFClient, string)) {
+func (c *Client) OnMessage(f func(model.IFClient, string)) {
 	c.messageCallback = f
 }
 
 // SetServerConn -
-func (c *Client) SetServerConn(conn Conn) {
+func (c *Client) SetServerConn(conn model.Conn) {
 	c.sConn = conn
 }
 
 // GetServer -
-func (c *Client) GetServer() IFServer {
+func (c *Client) GetServer() model.IFServer {
 	return c.server
 }
 
 // GetSelf -
-func (c *Client) GetSelf() *Peer {
+func (c *Client) GetSelf() *model.Peer {
 	return c.self
 }
 
 // GetPeer -
-func (c *Client) GetPeer() *Peer {
+func (c *Client) GetPeer() *model.Peer {
 	return c.peer
 }
 
 // SetPeer -
-func (c *Client) SetPeer(p *Peer) {
+func (c *Client) SetPeer(p *model.Peer) {
 	c.peer = p
 }
 

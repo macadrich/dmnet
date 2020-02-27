@@ -1,6 +1,7 @@
-package tcp
+package model
 
 import (
+	"dmnet/util"
 	"encoding/base64"
 	"net"
 )
@@ -55,7 +56,7 @@ func (tcp *PeerConn) GetAddr() net.Addr {
 
 // Send message send to peer
 func (tcp *PeerConn) Send(msg *Message) error {
-	b, err := SendMessage(msg)
+	b, err := util.SendMessage(msg)
 	if err != nil {
 		return err
 	}

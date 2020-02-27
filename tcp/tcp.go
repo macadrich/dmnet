@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/macadrich/dmnet"
+	"github.com/macadrich/dmnet/tcp"
 )
 
 // New network factory mode
@@ -21,9 +22,31 @@ func New(mode, address string) (dmnet.RNDZServer, error) {
 			return nil, err
 		}
 
+		server.P2PEnable(false)
+
 		return server, nil
 	case "client":
 		return nil, nil
+	case "p2p":
+		saddr, err := net.ResolveTCPAddr("tcp", serveraddr)
+		if err != nil {
+			return nil, err
+		}
+
+		caddr, err := net.ResolveTCPAddr("tcp", tcp.GenPort())
+
+		s, err := tcp.NewTCPServer(caddr, saddr)
+		if err != nil {
+			return nil, err
+		}
+
+		client, err := tcp.NewTCPClient(username, s)
+		if err != nil {
+			return nil, err
+		}
+
+		client.P2PEnable(true)
+		return client, nil
 	default:
 		return nil, errors.New("unknown network mode")
 	}

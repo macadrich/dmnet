@@ -14,4 +14,6 @@ func TestP2PClient(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to establish p2p connection! %v", err)
 	}
+
+	peer.Stop()
 }

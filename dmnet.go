@@ -7,6 +7,7 @@ type P2P interface {
 
 // RNDZServer rendezvous server
 type RNDZServer interface {
+	P2PEnable(bool)
 	Listen()
 	Stop()
 }
