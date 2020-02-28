@@ -55,16 +55,43 @@ func (s *Server) sender() {
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	var conn net.Conn
 	if s.isP2P { // peer to peer only
-		conn, err := net.Dial("tcp", s.sAddr.String())
-		if err != nil {
-			log.Print("can't connect to server!")
-			log.Printf("%v", err)
-			return
-		}
-		defer conn.Close()
+		s.p2precv()
+	} else {
+		s.listenrecv()
 	}
+}
+
+// Status -
+func (s *Server) Status() {
+	log.Println("IP:", s.sAddr.String())
+	log.Println("Mode:", s.isP2P)
+}
+
+// listenrecv -
+func (s *Server) listenrecv() {
+	for {
+		select {
+		case <-s.exit:
+			log.Print("exiting UDP sender")
+			return
+		case p := <-s.send:
+			if p != nil {
+				log.Println("Send:", string(p.Bytes))
+			}
+		}
+	}
+}
+
+// p2precv -
+func (s *Server) p2precv() {
+	conn, err := net.Dial("tcp", s.sAddr.String())
+	if err != nil {
+		log.Print("can't connect to server!")
+		log.Printf("%v", err)
+		return
+	}
+	defer conn.Close()
 
 	for {
 		select {
@@ -74,18 +101,10 @@ func (s *Server) sender() {
 		case p := <-s.send:
 			if p != nil {
 				log.Println("Send:", string(p.Bytes))
-				if s.isP2P {
-					conn.Write(p.Bytes)
-				}
+				conn.Write(p.Bytes)
 			}
 		}
 	}
-}
-
-// Status -
-func (s *Server) Status() {
-	log.Println("IP:", s.sAddr.String())
-	log.Println("Mode:", s.isP2P)
 }
 
 // Addr -
