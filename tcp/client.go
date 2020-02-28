@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"log"
 	"net"
 
 	"github.com/macadrich/dmnet/model"
@@ -14,7 +15,6 @@ type Client struct {
 	sAddr              *net.TCPAddr
 	sConn              model.Conn // server TCPConn
 	pConn              model.Conn // peer TCPConn
-	isP2P              bool
 	registeredCallback func(model.IFClient)
 	messageCallback    func(model.IFClient, string)
 }
@@ -61,9 +61,9 @@ func (c *Client) StartP2P() error {
 	return nil
 }
 
-// Listen -
-func (c *Client) Listen() {
-
+// Status -
+func (c *Client) Status() {
+	log.Println("IP:", c.self.Addr)
 }
 
 // OnRegistered -

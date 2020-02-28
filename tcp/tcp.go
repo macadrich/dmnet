@@ -8,16 +8,25 @@ import (
 	"github.com/macadrich/dmnet"
 )
 
+const (
+	// DMNETSERVER as server
+	DMNETSERVER = "server"
+	// DMNETP2P as peer to peer
+	DMNETP2P = "p2p"
+	// DMNETCLIENT as client
+	DMNETCLIENT = "client"
+)
+
 // New network factory mode
 func New(mode, address string) (dmnet.DMNet, error) {
 	switch mode {
-	case "server":
+	case DMNETSERVER:
 		tcpaddr, err := net.ResolveTCPAddr("tcp", address)
 		if err != nil {
 			return nil, err
 		}
 
-		server, err := NewTCPServer(tcpaddr, nil)
+		server, err := NewTCPServer(mode, tcpaddr, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -25,9 +34,9 @@ func New(mode, address string) (dmnet.DMNet, error) {
 		server.Listen()
 
 		return server, nil
-	case "client":
+	case DMNETCLIENT:
 		return nil, nil
-	case "p2p":
+	case DMNETP2P:
 		saddr, err := net.ResolveTCPAddr("tcp", address)
 		if err != nil {
 			return nil, err
@@ -35,7 +44,7 @@ func New(mode, address string) (dmnet.DMNet, error) {
 
 		caddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
 
-		s, err := NewTCPServer(caddr, saddr)
+		s, err := NewTCPServer(mode, caddr, saddr)
 		if err != nil {
 			return nil, err
 		}

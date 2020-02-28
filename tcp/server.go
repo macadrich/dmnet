@@ -15,19 +15,25 @@ import (
 type Server struct {
 	sAddr   *net.TCPAddr
 	p2paddr string
-	isP2P   bool
 	p2pc    net.Listener
 	conns   model.Conns
+	isP2P   bool
 	wg      *sync.WaitGroup
 	send    chan *model.Payload
 	exit    chan bool
 }
 
 // NewTCPServer -
-func NewTCPServer(addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, error) {
+func NewTCPServer(mode string, addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, error) {
+	var m bool
+
 	listener, err := net.ListenTCP("tcp", addr)
 	if err != nil {
 		return nil, err
+	}
+
+	if mode == DMNETSERVER {
+		m = true
 	}
 
 	port := listener.Addr().(*net.TCPAddr).Port
@@ -38,33 +44,27 @@ func NewTCPServer(addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, error) {
 		p2paddr: paddr,             // p2p address and port
 		p2pc:    listener,          // p2p listener
 		conns:   make(model.Conns), // p2p connections
+		isP2P:   m,
 		wg:      &sync.WaitGroup{},
 		send:    make(chan *model.Payload, 100),
 		exit:    make(chan bool),
 	}, nil
 }
 
-// P2PEnable yes to set p2p network, otherwise as a rdv server
-func (s *Server) P2PEnable(mode bool) {
-	s.isP2P = mode
-}
-
-// StartP2P start peer to peer connection
-func (s *Server) StartP2P() error {
-	return nil
-}
-
 func (s *Server) sender() {
+	var conn net.Conn
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	conn, err := net.Dial("tcp", s.sAddr.String())
-	if err != nil {
-		log.Print("can't connect to server!")
-		log.Printf("%v", err)
-		return
+	if s.isP2P { // peer to peer only
+		conn, err := net.Dial("tcp", s.sAddr.String())
+		if err != nil {
+			log.Print("can't connect to server!")
+			log.Printf("%v", err)
+			return
+		}
+		defer conn.Close()
 	}
-	defer conn.Close()
 
 	for {
 		select {
@@ -74,10 +74,17 @@ func (s *Server) sender() {
 		case p := <-s.send:
 			if p != nil {
 				log.Println("Send:", string(p.Bytes))
-				conn.Write(p.Bytes)
+				if s.isP2P {
+					conn.Write(p.Bytes)
+				}
 			}
 		}
 	}
+}
+
+// Status -
+func (s *Server) Status() {
+	log.Println("IP:", s.sAddr.String())
 }
 
 // Addr -

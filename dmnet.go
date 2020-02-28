@@ -2,7 +2,7 @@ package dmnet
 
 // DMNet rendezvous server
 type DMNet interface {
-	Listen()
+	Status()
 	Stop()
 }
 

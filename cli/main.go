@@ -10,6 +10,7 @@ import (
 )
 
 func rndzServer() {
+	log.Println("[ SERVER ]")
 	s, err := tcp.New("server", "0.0.0.0:9001")
 	if err != nil {
 		panic(err)
@@ -18,10 +19,12 @@ func rndzServer() {
 	exit := make(chan os.Signal)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
 	log.Print(<-exit)
+	s.Stop()
 	log.Println("Done.")
 }
 
 func p2pClient() {
+	log.Println("[ P2P ]")
 	c, err := tcp.New("p2p", "0.0.0.0:9001")
 	if err != nil {
 		panic(err)
@@ -35,6 +38,6 @@ func p2pClient() {
 }
 
 func main() {
-	p2pClient()
-	//rndzServer()
+	//p2pClient()
+	rndzServer()
 }
