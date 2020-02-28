@@ -68,7 +68,7 @@ func (tcp *PeerConn) Send(msg *Message) error {
 }
 
 // GetTCPConn -
-func (tcp *PeerConn) GetTCPConn() net.Conn {
+func (tcp *PeerConn) GetTCPConn() net.TCPConn {
 	return tcp.conn
 }
 

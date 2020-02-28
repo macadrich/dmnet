@@ -25,7 +25,7 @@ type Conn interface {
 	Send(*Message) error
 	Protocol() string
 	GetAddr() net.Addr
-	GetTCPConn() net.Conn
+	GetTCPConn() net.TCPConn
 }
 
 // Conns map peer connection
