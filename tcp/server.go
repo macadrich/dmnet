@@ -3,7 +3,6 @@ package tcp
 import (
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"sync"
@@ -82,7 +81,7 @@ func (s *Server) listenrecv() {
 				log.Println("Send:", string(p.Bytes))
 				c := s.conns[p.Addr.String()]
 
-				n, err := io.WriteString(c.GetTCPConn(), string(p.Bytes))
+				n, err := c.GetTCPConn().Write(p.Bytes)
 				if err != nil {
 					return
 				}
