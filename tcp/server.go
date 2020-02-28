@@ -56,6 +56,7 @@ func (s *Server) sender() {
 	s.wg.Add(1)
 	defer s.wg.Done()
 
+	log.Println("IS-P2P:", s.isP2P)
 	if s.isP2P { // peer to peer only
 		conn, err := net.Dial("tcp", s.sAddr.String())
 		if err != nil {
@@ -85,6 +86,7 @@ func (s *Server) sender() {
 // Status -
 func (s *Server) Status() {
 	log.Println("IP:", s.sAddr.String())
+	log.Println("Mode:", s.isP2P)
 }
 
 // Addr -
