@@ -49,6 +49,11 @@ func (s *Server) P2PEnable(mode bool) {
 	s.isP2P = mode
 }
 
+// StartP2P start peer to peer connection
+func (s *Server) StartP2P() {
+
+}
+
 func (s *Server) sender() {
 	s.wg.Add(1)
 	defer s.wg.Done()
