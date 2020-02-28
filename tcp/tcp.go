@@ -22,7 +22,7 @@ func New(mode, address string) (dmnet.RNDZServer, error) {
 			return nil, err
 		}
 
-		server.P2PEnable(false)
+		server.Listen()
 
 		return server, nil
 	case "client":

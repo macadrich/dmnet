@@ -66,11 +66,6 @@ func (c *Client) Listen() {
 
 }
 
-// P2PEnable yes to set p2p network, otherwise as a rdv server
-func (c *Client) P2PEnable(mode bool) {
-	c.isP2P = mode
-}
-
 // OnRegistered -
 func (c *Client) OnRegistered(f func(model.IFClient)) {
 	c.registeredCallback = f
