@@ -9,7 +9,7 @@ import (
 )
 
 // New network factory mode
-func New(mode, address string) (dmnet.RNDZServer, error) {
+func New(mode, address string) (dmnet.DMNet, error) {
 	switch mode {
 	case "server":
 		tcpaddr, err := net.ResolveTCPAddr("tcp", address)
@@ -45,7 +45,7 @@ func New(mode, address string) (dmnet.RNDZServer, error) {
 			return nil, err
 		}
 
-		client.P2PEnable(true)
+		client.StartP2P()
 		return client, nil
 	default:
 		return nil, errors.New("unknown network mode")
