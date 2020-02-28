@@ -52,10 +52,10 @@ func NewTCPServer(mode string, addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, 
 }
 
 func (s *Server) sender() {
-	var conn net.Conn
 	s.wg.Add(1)
 	defer s.wg.Done()
 
+	var conn net.Conn
 	if s.isP2P { // peer to peer only
 		conn, err := net.Dial("tcp", s.sAddr.String())
 		if err != nil {

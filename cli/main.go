@@ -32,6 +32,8 @@ func p2pClient() {
 		panic(err)
 	}
 
+	c.Status()
+
 	exit := make(chan os.Signal)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
 	log.Print(<-exit)
@@ -40,6 +42,6 @@ func p2pClient() {
 }
 
 func main() {
-	//p2pClient()
-	rndzServer()
+	p2pClient()
+	//rndzServer()
 }
