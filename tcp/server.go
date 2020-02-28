@@ -212,7 +212,8 @@ func (s *Server) CreateConn(sAddr net.Addr) (model.Conn, error) {
 		return nil, errors.New("could not assert net.Addr to *net.UDPAddr")
 	}
 
-	c := model.NewPeerConn(nil, s.send, tcpAddr)
+	conn := s.conns[tcpAddr.String()]
+	c := model.NewPeerConn(conn.GetTCPConn(), s.send, tcpAddr)
 	s.conns[sAddr.String()] = c
 
 	return c, nil
