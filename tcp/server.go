@@ -82,7 +82,7 @@ func (s *Server) listenrecv() {
 				log.Println("Send:", string(p.Bytes))
 				c := s.conns[p.Addr.String()]
 
-				n, err := io.WriteString(c.GetTCPConn(), "testing!!!")
+				n, err := io.WriteString(c.GetTCPConn(), string(p.Bytes))
 				if err != nil {
 					return
 				}
