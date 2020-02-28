@@ -54,7 +54,7 @@ func NewTCPServer(mode string, addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, 
 func (s *Server) sender() {
 	s.wg.Add(1)
 	defer s.wg.Done()
-
+	log.Println("sender()")
 	if s.isP2P { // peer to peer only
 		s.p2precv()
 	} else {
@@ -70,14 +70,20 @@ func (s *Server) Status() {
 
 // listenrecv -
 func (s *Server) listenrecv() {
+	log.Println("listenrecv()")
 	for {
 		select {
 		case <-s.exit:
-			log.Print("exiting UDP sender")
+			log.Print("exiting TCP sender")
 			return
 		case p := <-s.send:
 			if p != nil {
 				log.Println("Send:", string(p.Bytes))
+				conn, err := s.p2pc.Accept()
+				if err != nil {
+					return
+				}
+				conn.Write(p.Bytes)
 			}
 		}
 	}
@@ -96,7 +102,7 @@ func (s *Server) p2precv() {
 	for {
 		select {
 		case <-s.exit:
-			log.Print("exiting UDP sender")
+			log.Print("exiting TCP sender")
 			return
 		case p := <-s.send:
 			if p != nil {
@@ -146,7 +152,7 @@ func (s *Server) Stop() {
 	log.Print("TCP Server exited")
 }
 
-func (s *Server) serve(b []byte) {
+func (s *Server) serve(b []byte, c net.Conn) {
 	defer s.wg.Done()
 	msg := &model.Message{}
 	m, err := util.RecvMessage(msg, b)
@@ -155,6 +161,11 @@ func (s *Server) serve(b []byte) {
 		return
 	}
 	log.Println("Receive:", m)
+	conn := s.conns[c.RemoteAddr().String()]
+	conn.Send(&model.Message{
+		Type:    "text",
+		Content: "Hello client!",
+	})
 }
 
 func (s *Server) receive(c net.Conn) {
@@ -181,9 +192,8 @@ func (s *Server) receive(c net.Conn) {
 			log.Print(err)
 			return
 		}
-
 		s.wg.Add(1)
-		go s.serve(buf[:n])
+		go s.serve(buf[:n], c)
 	}
 }
 
