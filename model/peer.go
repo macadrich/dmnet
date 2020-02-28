@@ -43,7 +43,7 @@ func (p *Peer) SetPublicKey(key [32]byte) {
 type PeerConn struct {
 	send chan *Payload
 	addr *net.TCPAddr
-	conn net.Conn
+	conn net.TCPConn
 }
 
 // Protocol connection tcp protocol
