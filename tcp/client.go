@@ -61,6 +61,11 @@ func (c *Client) StartP2P() error {
 	return nil
 }
 
+// Listen -
+func (c *Client) Listen() {
+
+}
+
 // P2PEnable yes to set p2p network, otherwise as a rdv server
 func (c *Client) P2PEnable(mode bool) {
 	c.isP2P = mode

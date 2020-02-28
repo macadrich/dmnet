@@ -46,7 +46,7 @@ func NewTCPServer(addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, error) {
 
 // P2PEnable yes to set p2p network, otherwise as a rdv server
 func (s *Server) P2PEnable(mode bool) {
-	c.isP2P = mode
+	s.isP2P = mode
 }
 
 func (s *Server) sender() {

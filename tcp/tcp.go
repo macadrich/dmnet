@@ -28,7 +28,7 @@ func New(mode, address string) (dmnet.RNDZServer, error) {
 	case "client":
 		return nil, nil
 	case "p2p":
-		saddr, err := net.ResolveTCPAddr("tcp", serveraddr)
+		saddr, err := net.ResolveTCPAddr("tcp", address)
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +40,7 @@ func New(mode, address string) (dmnet.RNDZServer, error) {
 			return nil, err
 		}
 
-		client, err := NewTCPClient(username, s)
+		client, err := NewTCPClient("username", s)
 		if err != nil {
 			return nil, err
 		}
