@@ -79,8 +79,8 @@ func (s *Server) listenrecv() {
 		case p := <-s.send:
 			if p != nil {
 				log.Println("Send:", string(p.Bytes))
-				//c := s.conns[p.Addr.String()]
-
+				c := s.conns[p.Addr.String()]
+				c.GetTCPConn()
 			}
 		}
 	}
