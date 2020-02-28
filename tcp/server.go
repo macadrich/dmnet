@@ -32,7 +32,7 @@ func NewTCPServer(mode string, addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, 
 		return nil, err
 	}
 
-	if mode == DMNETSERVER {
+	if mode == DMNETP2P {
 		m = true
 	}
 
@@ -56,7 +56,6 @@ func (s *Server) sender() {
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	log.Println("IS-P2P:", s.isP2P)
 	if s.isP2P { // peer to peer only
 		conn, err := net.Dial("tcp", s.sAddr.String())
 		if err != nil {
