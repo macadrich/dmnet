@@ -73,7 +73,7 @@ func (tcp *PeerConn) GetTCPConn() net.TCPConn {
 }
 
 // NewPeerConn -
-func NewPeerConn(c net.Conn, send chan *Payload, addr *net.TCPAddr) *PeerConn {
+func NewPeerConn(c net.TCPConn, send chan *Payload, addr *net.TCPAddr) *PeerConn {
 	return &PeerConn{
 		send: send,
 		addr: addr,
