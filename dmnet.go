@@ -3,7 +3,7 @@ package dmnet
 // RNDZServer rendezvous server
 type RNDZServer interface {
 	P2PEnable(bool)
-	StartP2P()
+	StartP2P() error
 	Listen()
 	Stop()
 }

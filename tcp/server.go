@@ -50,8 +50,8 @@ func (s *Server) P2PEnable(mode bool) {
 }
 
 // StartP2P start peer to peer connection
-func (s *Server) StartP2P() {
-
+func (s *Server) StartP2P() error {
+	return nil
 }
 
 func (s *Server) sender() {
