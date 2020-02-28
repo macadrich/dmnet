@@ -1,13 +1,9 @@
 package dmnet
 
-// P2P peer to peer client
-type P2P interface {
-	StartP2P()
-}
-
 // RNDZServer rendezvous server
 type RNDZServer interface {
 	P2PEnable(bool)
+	StartP2P()
 	Listen()
 	Stop()
 }
