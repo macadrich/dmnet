@@ -3,17 +3,16 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5873507c8d5bab9c0063c0a58200dbaddf487d7462e6dd9f0ebe94a3d522d2af"
+  digest = "1:c0b554be15185775ac2b85cdcebe854143843f4ee711244642907394bc025b0d"
   name = "github.com/macadrich/dmnet"
   packages = [
     ".",
     "model",
-    "p2p",
     "tcp",
     "util",
   ]
   pruneopts = ""
-  revision = "ed36215a09497f11e66b1c993c517bdce302b4bf"
+  revision = "a9d058e14c5050a575fee3512dfa02279f7469c0"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -21,7 +20,6 @@
   input-imports = [
     "github.com/macadrich/dmnet",
     "github.com/macadrich/dmnet/model",
-    "github.com/macadrich/dmnet/p2p",
     "github.com/macadrich/dmnet/tcp",
     "github.com/macadrich/dmnet/util",
   ]
