@@ -79,11 +79,8 @@ func (s *Server) listenrecv() {
 		case p := <-s.send:
 			if p != nil {
 				log.Println("Send:", string(p.Bytes))
-				conn, err := s.p2pc.Accept()
-				if err != nil {
-					return
-				}
-				conn.Write(p.Bytes)
+				//c := s.conns[p.Addr.String()]
+
 			}
 		}
 	}
@@ -136,7 +133,7 @@ func (s *Server) Listen() {
 			return
 		}
 
-		c := model.NewPeerConn(s.send, tcpAddr)
+		c := model.NewPeerConn(conn, s.send, tcpAddr)
 		log.Printf("New Connection: %v", c.GetAddr())
 		s.conns[tcpAddr.String()] = c
 
@@ -208,7 +205,7 @@ func (s *Server) CreateConn(sAddr net.Addr) (model.Conn, error) {
 		return nil, errors.New("could not assert net.Addr to *net.UDPAddr")
 	}
 
-	c := model.NewPeerConn(s.send, tcpAddr)
+	c := model.NewPeerConn(nil, s.send, tcpAddr)
 	s.conns[sAddr.String()] = c
 
 	return c, nil

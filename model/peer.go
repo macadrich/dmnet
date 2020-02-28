@@ -43,6 +43,7 @@ func (p *Peer) SetPublicKey(key [32]byte) {
 type PeerConn struct {
 	send chan *Payload
 	addr *net.TCPAddr
+	conn net.Conn
 }
 
 // Protocol connection tcp protocol
@@ -66,10 +67,16 @@ func (tcp *PeerConn) Send(msg *Message) error {
 	return nil
 }
 
+// GetTCPConn -
+func (tcp *PeerConn) GetTCPConn() net.Conn {
+	return tcp.conn
+}
+
 // NewPeerConn -
-func NewPeerConn(send chan *Payload, addr *net.TCPAddr) *PeerConn {
+func NewPeerConn(c net.Conn, send chan *Payload, addr *net.TCPAddr) *PeerConn {
 	return &PeerConn{
 		send: send,
 		addr: addr,
+		conn: c,
 	}
 }
