@@ -39,7 +39,7 @@ func NewTCPClient(username string, server model.IFServer) (*Client, error) {
 
 // StartP2P start peer to peer connection
 func (c *Client) StartP2P() error {
-	s := p2p.GetServer()
+	s := c.GetServer()
 
 	sConn, err := s.CreateConn(c.sAddr)
 	if err != nil {
@@ -47,7 +47,7 @@ func (c *Client) StartP2P() error {
 	}
 
 	// set conn
-	p2p.SetServerConn(sConn)
+	c.SetServerConn(sConn)
 
 	// start listening
 	go s.Listen()
@@ -55,7 +55,7 @@ func (c *Client) StartP2P() error {
 	// send greeting message to server
 	sConn.Send(&model.Message{
 		Type:    "connect",
-		Content: p2p.GetServer().Addr(),
+		Content: c.GetServer().Addr(),
 	})
 
 	return nil
