@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b5809dae4f2500cbbfaff6e443b498d10d34c48eeed33821808773bb8e1fcc67"
+  digest = "1:99d24207d07166aea750196126ac85a75cf78726325b3c5cd6e230db6762c8c6"
   name = "github.com/macadrich/dmnet"
   packages = [
     ".",
@@ -12,7 +12,7 @@
     "util",
   ]
   pruneopts = ""
-  revision = "0f985957403b3807a8549de156877982cca39614"
+  revision = "0fe4b86d961780e509d83200051caf683820b857"
 
 [solve-meta]
   analyzer-name = "dep"

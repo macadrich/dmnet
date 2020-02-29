@@ -26,6 +26,7 @@ type Client struct {
 type P2PClient struct {
 	c     net.Conn
 	s     model.P2PIFServer
+	sConn model.Conn
 	sAddr *net.TCPAddr
 	self  *model.Peer
 	peer  *model.Peer
@@ -44,6 +45,11 @@ func (c *P2PClient) Status() {
 // Stop -
 func (c *P2PClient) Stop() {
 	c.s.Stop()
+}
+
+// SetServerConn -
+func (c *P2PClient) SetServerConn(conn model.Conn) {
+	c.sConn = conn
 }
 
 // NewTCPClient -
@@ -81,33 +87,45 @@ func NewTCPClient(username, saddress string) (*P2PClient, error) {
 	}, nil
 }
 
+func receive(c net.Conn) {
+	defer c.Close()
+	for {
+		buf := make([]byte, 1024)
+		n, err := c.Read(buf)
+		if err != nil {
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+				continue
+			}
+
+			log.Print(err)
+			return
+		}
+		log.Println("message:", string(buf[:n]))
+	}
+}
+
 // StartP2P start peer to peer connection
 func (c *P2PClient) StartP2P() error {
 
 	s := c.GetServer()
+
+	// start listening
 	go s.Listen()
 
-	sConn, err := s.CreateConn(c.sAddr)
-	if err != nil {
-		return err
+	msg := &model.Message{
+		Type:    "connect",
+		Content: c.sAddr.String(),
 	}
+	b, _ := util.SendMessage(msg)
+	c.c.Write(b)
 
-	// set conn
-	// c.SetServerConn(sConn)
-
-	// // start listening
-	// go s.Listen()
+	receive(c.c)
 
 	// send greeting message to server
-	sConn.Send(&model.Message{
-		Type:    "connect",
-		Content: "test",
-	})
-
-	// saddr, err := net.ResolveTCPAddr("tcp", c.sAddr.String())
-	// if err != nil {
-	// 	return err
-	// }
+	// sConn.Send(&model.Message{
+	// 	Type:    "connect",
+	// 	Content: "test",
+	// })
 
 	return nil
 }

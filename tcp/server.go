@@ -46,7 +46,6 @@ func (s *P2PServer) Status() {
 
 // p2psender -
 func (s *P2PServer) p2psender() {
-
 	for {
 		select {
 		case <-s.exit:
@@ -54,10 +53,17 @@ func (s *P2PServer) p2psender() {
 			return
 		case p := <-s.send:
 			if p != nil {
-				log.Println("Send:", string(p.Bytes))
+				log.Println("[p2psender()] Send:", string(p.Bytes), p.Addr.String())
 				conn := s.conns[p.Addr.String()]
-				c := conn.GetTCPConn()
-				c.Write(p.Bytes)
+				n, err := conn.GetTCPConn().Write(p.Bytes)
+				if err != nil {
+					panic(err)
+				}
+
+				log.Println("Send success:", n)
+				// conn := s.conns[p.Addr.String()]
+				// c := conn.GetTCPConn()
+				// c.Write(p.Bytes)
 			}
 		}
 	}
@@ -122,6 +128,7 @@ func (s *P2PServer) serve(b []byte, c net.Conn) {
 		Type:    "text",
 		Content: "Hello client!",
 	})
+
 }
 
 func (s *P2PServer) receive(c net.Conn) {
@@ -179,6 +186,8 @@ func (s *P2PServer) CreateConn(sAddr net.Addr) (model.Conn, error) {
 	if !ok {
 		return nil, errors.New("could not assert net.Addr to *net.UDPAddr")
 	}
+
+	log.Println("Server address:", tcpAddr.String())
 
 	c := s.conns[tcpAddr.String()]
 
@@ -333,6 +342,7 @@ func (s *Server) serve(b []byte, c net.Conn) {
 		Type:    "text",
 		Content: "Hello client!",
 	})
+
 }
 
 func (s *Server) receive(c net.Conn) {
