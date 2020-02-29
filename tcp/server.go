@@ -23,6 +23,68 @@ type Server struct {
 	exit    chan bool
 }
 
+// P2PServer -
+type P2PServer struct {
+	sconn *net.TCPListener
+	wg    *sync.WaitGroup
+	send  chan *model.Payload
+	exit  chan bool
+}
+
+// Stop -
+func (s *P2PServer) Stop() {
+	close(s.exit)
+	s.wg.Wait()
+	log.Print("TCP Server exited")
+}
+
+// Status -
+func (s *P2PServer) Status() {
+	log.Println("IP:", s.sconn.Addr().String())
+}
+
+// NewP2PServer -
+func NewP2PServer(saddr *net.TCPAddr) (*P2PServer, error) {
+	listener, err := net.ListenTCP("tcp", saddr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &P2PServer{
+		sconn: listener,
+	}, nil
+}
+
+// Listen -
+func (s *P2PServer) Listen() {
+	log.Println("Listening on", s.sconn.Addr())
+
+	//go s.sender()
+
+	for {
+
+		conn, err := s.sconn.Accept()
+		if err != nil {
+			log.Print(err) // print error and continue
+			continue
+		}
+
+		tcpAddr, ok := conn.RemoteAddr().(*net.TCPAddr)
+		if !ok {
+			log.Print("could not assert net.Addr to *net.TCPAddr")
+			return
+		}
+
+		c := model.NewPeerConn(nil, s.send, tcpAddr)
+		log.Printf("New Connection: %v", c.GetAddr())
+
+		// s.conns[tcpAddr.String()] = c
+		// s.receive(conn)
+	}
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 // NewTCPServer -
 func NewTCPServer(mode string, addr *net.TCPAddr, saddr *net.TCPAddr) (*Server, error) {
 	var m bool

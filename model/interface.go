@@ -2,6 +2,12 @@ package model
 
 import "net"
 
+type P2PIFServer interface {
+	Status()
+	Stop()
+	Listen()
+}
+
 // IFServer tcp server
 type IFServer interface {
 	Addr() string

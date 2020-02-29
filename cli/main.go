@@ -38,6 +38,6 @@ func p2pClient() {
 }
 
 func main() {
-	//p2pClient()
-	rndzServer()
+	p2pClient()
+	//rndzServer()
 }

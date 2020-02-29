@@ -2,7 +2,6 @@ package tcp
 
 import (
 	"bufio"
-	"dmnet/util"
 	"fmt"
 	"log"
 	"net"
@@ -22,11 +21,45 @@ type Client struct {
 	messageCallback    func(model.IFClient, string)
 }
 
-// NewTCPClient initialize with username
-// for client and server as p2p
-func NewTCPClient(username, address string) (*Client, error) {
+// P2PClient -
+type P2PClient struct {
+	c    net.Conn
+	s    model.P2PIFServer
+	self *model.Peer
+	peer *model.Peer
+}
 
-	nd, err := net.Dial("tcp", address)
+// GetServer -
+func (c *P2PClient) GetServer() model.P2PIFServer {
+	return c.s
+}
+
+// Status -
+func (c *P2PClient) Status() {
+	log.Println("IP:", c.self.Addr)
+}
+
+// Stop -
+func (c *P2PClient) Stop() {
+	c.s.Stop()
+}
+
+// NewTCPClient -
+func NewTCPClient(username, saddress, caddress string) (*P2PClient, error) {
+
+	// connect to server
+	c, err := net.Dial("tcp", saddress)
+	if err != nil {
+		return nil, err
+	}
+
+	saddr, err := net.ResolveTCPAddr("tcp", caddress)
+	if err != nil {
+		return nil, err
+	}
+
+	// listen server
+	s, err := NewP2PServer(saddr)
 	if err != nil {
 		return nil, err
 	}
@@ -37,14 +70,15 @@ func NewTCPClient(username, address string) (*Client, error) {
 	// initialize peer
 	p := &model.Peer{}
 
-	return &Client{
-		c:                  nd,
-		self:               self,
-		peer:               p,
-		registeredCallback: func(model.IFClient) {},
-		messageCallback:    func(model.IFClient, string) {},
+	return &P2PClient{
+		c:    c,
+		s:    s,
+		self: self,
+		peer: p,
 	}, nil
 }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 func copyIO(src, dest net.Conn) {
 	defer src.Close()
@@ -66,39 +100,59 @@ func handleRequest(conn, nd net.Conn) {
 }
 
 // StartP2P start peer to peer connection
-func (c *Client) StartP2P() error {
-	listener, err := net.Listen("tcp", util.GenPort())
-	if err != nil {
-		return nil
-	}
+func (c *P2PClient) StartP2P() error {
 
-	for {
-		conn, err := listener.Accept()
+	s := c.GetServer()
+	go s.Listen()
+
+	// sConn, err := s.CreateConn(c.sAddr)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// // set conn
+	// c.SetServerConn(sConn)
+
+	// // start listening
+	// go s.Listen()
+
+	// // send greeting message to server
+	// sConn.Send(&model.Message{
+	// 	Type:    "connect",
+	// 	Content: c.GetServer().Addr(),
+	// })
+
+	// saddr, err := net.ResolveTCPAddr("tcp", c.sAddr.String())
+	// if err != nil {
+	// 	return err
+	// }
+
+	// s, err := NewP2PServer(saddr)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// for {
+	// 	conn, err := s.sconn.Accept()
+	// 	if err != nil {
+	// 		return nil
+	// 	}
+	// 	go handleRequest(conn, c.c)
+	// }
+
+	/*
+		listener, err := net.Listen("tcp", util.GenPort())
 		if err != nil {
 			return nil
 		}
-		go handleRequest(conn, c.c)
-	}
 
-	/*
-		s := c.GetServer()
-
-		sConn, err := s.CreateConn(c.sAddr)
-		if err != nil {
-			return err
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return nil
+			}
+			go handleRequest(conn, c.c)
 		}
-
-		// set conn
-		c.SetServerConn(sConn)
-
-		// start listening
-		go s.Listen()
-
-		// send greeting message to server
-		sConn.Send(&model.Message{
-			Type:    "connect",
-			Content: c.GetServer().Addr(),
-		})
 	*/
 
 	return nil
