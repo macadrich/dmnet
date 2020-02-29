@@ -2,6 +2,7 @@ package tcp
 
 import (
 	"bufio"
+	"dmnet/util"
 	"fmt"
 	"log"
 	"net"
@@ -45,7 +46,7 @@ func (c *P2PClient) Stop() {
 }
 
 // NewTCPClient -
-func NewTCPClient(username, saddress, caddress string) (*P2PClient, error) {
+func NewTCPClient(username, saddress string) (*P2PClient, error) {
 
 	// connect to server
 	c, err := net.Dial("tcp", saddress)
@@ -53,7 +54,7 @@ func NewTCPClient(username, saddress, caddress string) (*P2PClient, error) {
 		return nil, err
 	}
 
-	saddr, err := net.ResolveTCPAddr("tcp", caddress)
+	saddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
 	if err != nil {
 		return nil, err
 	}

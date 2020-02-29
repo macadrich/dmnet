@@ -58,7 +58,7 @@ func New(mode, address string) (dmnet.DMNet, error) {
 			client.StartP2P()
 		*/
 
-		client, err := NewTCPClient("username", address, "")
+		client, err := NewTCPClient("username", address)
 		if err != nil {
 			return nil, err
 		}
