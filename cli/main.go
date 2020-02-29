@@ -16,8 +16,6 @@ func rndzServer() {
 		panic(err)
 	}
 
-	s.Status()
-
 	exit := make(chan os.Signal)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
 	log.Print(<-exit)
@@ -31,8 +29,6 @@ func p2pClient() {
 	if err != nil {
 		panic(err)
 	}
-
-	c.Status()
 
 	exit := make(chan os.Signal)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)

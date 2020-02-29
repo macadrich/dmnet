@@ -1,6 +1,9 @@
 package tcp
 
 import (
+	"bufio"
+	"dmnet/util"
+	"fmt"
 	"log"
 	"net"
 
@@ -9,7 +12,7 @@ import (
 
 // Client base client
 type Client struct {
-	server             model.IFServer
+	c                  net.Conn
 	self               *model.Peer
 	peer               *model.Peer
 	sAddr              *net.TCPAddr
@@ -21,7 +24,13 @@ type Client struct {
 
 // NewTCPClient initialize with username
 // for client and server as p2p
-func NewTCPClient(username string, server model.IFServer) (*Client, error) {
+func NewTCPClient(username, address string) (*Client, error) {
+
+	nd, err := net.Dial("tcp", address)
+	if err != nil {
+		return nil, err
+	}
+
 	// set username peer
 	self := &model.Peer{Username: username}
 
@@ -29,34 +38,68 @@ func NewTCPClient(username string, server model.IFServer) (*Client, error) {
 	p := &model.Peer{}
 
 	return &Client{
+		c:                  nd,
 		self:               self,
 		peer:               p,
-		server:             server,
 		registeredCallback: func(model.IFClient) {},
 		messageCallback:    func(model.IFClient, string) {},
 	}, nil
 }
 
+func copyIO(src, dest net.Conn) {
+	defer src.Close()
+	defer dest.Close()
+
+	msg := bufio.NewScanner(src)
+	for msg.Scan() {
+		fmt.Println("Message:", msg.Text())
+		dest.Write([]byte(msg.Text() + "\n"))
+		src.Write([]byte(msg.Text() + "\n"))
+	}
+}
+
+func handleRequest(conn, nd net.Conn) {
+	fmt.Println("new client")
+
+	go copyIO(conn, nd)
+	go copyIO(nd, conn)
+}
+
 // StartP2P start peer to peer connection
 func (c *Client) StartP2P() error {
-	s := c.GetServer()
-
-	sConn, err := s.CreateConn(c.sAddr)
+	listener, err := net.Listen("tcp", util.GenPort())
 	if err != nil {
-		return err
+		return nil
 	}
 
-	// set conn
-	c.SetServerConn(sConn)
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			return nil
+		}
+		go handleRequest(conn, c.c)
+	}
 
-	// start listening
-	go s.Listen()
+	/*
+		s := c.GetServer()
 
-	// send greeting message to server
-	sConn.Send(&model.Message{
-		Type:    "connect",
-		Content: c.GetServer().Addr(),
-	})
+		sConn, err := s.CreateConn(c.sAddr)
+		if err != nil {
+			return err
+		}
+
+		// set conn
+		c.SetServerConn(sConn)
+
+		// start listening
+		go s.Listen()
+
+		// send greeting message to server
+		sConn.Send(&model.Message{
+			Type:    "connect",
+			Content: c.GetServer().Addr(),
+		})
+	*/
 
 	return nil
 }
@@ -82,9 +125,9 @@ func (c *Client) SetServerConn(conn model.Conn) {
 }
 
 // GetServer -
-func (c *Client) GetServer() model.IFServer {
-	return c.server
-}
+// func (c *Client) GetServer() model.IFServer {
+// 	return c.server
+// }
 
 // GetSelf -
 func (c *Client) GetSelf() *model.Peer {
@@ -103,5 +146,5 @@ func (c *Client) SetPeer(p *model.Peer) {
 
 // Stop -
 func (c *Client) Stop() {
-	c.server.Stop()
+	//c.server.Stop()
 }

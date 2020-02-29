@@ -1,7 +1,6 @@
 package tcp
 
 import (
-	"dmnet/util"
 	"errors"
 	"net"
 
@@ -37,19 +36,29 @@ func New(mode, address string) (dmnet.DMNet, error) {
 	case DMNETCLIENT:
 		return nil, nil
 	case DMNETP2P:
-		saddr, err := net.ResolveTCPAddr("tcp", address)
-		if err != nil {
-			return nil, err
-		}
 
-		caddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
+		/*
+			saddr, err := net.ResolveTCPAddr("tcp", address)
+			if err != nil {
+				return nil, err
+			}
 
-		s, err := NewTCPServer(mode, caddr, saddr)
-		if err != nil {
-			return nil, err
-		}
+			caddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
 
-		client, err := NewTCPClient("username", s)
+			s, err := NewTCPServer(mode, caddr, saddr)
+			if err != nil {
+				return nil, err
+			}
+
+			client, err := NewTCPClient("username", s)
+			if err != nil {
+				return nil, err
+			}
+
+			client.StartP2P()
+		*/
+
+		client, err := NewTCPClient("username", address)
 		if err != nil {
 			return nil, err
 		}
