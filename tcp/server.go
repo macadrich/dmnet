@@ -26,6 +26,7 @@ type Server struct {
 // P2PServer -
 type P2PServer struct {
 	sconn *net.TCPListener
+	conns model.Conns
 	wg    *sync.WaitGroup
 	send  chan *model.Payload
 	exit  chan bool
@@ -43,6 +44,25 @@ func (s *P2PServer) Status() {
 	log.Println("IP:", s.sconn.Addr().String())
 }
 
+// p2psender -
+func (s *P2PServer) p2psender() {
+
+	for {
+		select {
+		case <-s.exit:
+			log.Print("exiting TCP sender")
+			return
+		case p := <-s.send:
+			if p != nil {
+				log.Println("Send:", string(p.Bytes))
+				conn := s.conns[p.Addr.String()]
+				c := conn.GetTCPConn()
+				c.Write(p.Bytes)
+			}
+		}
+	}
+}
+
 // NewP2PServer -
 func NewP2PServer(saddr *net.TCPAddr) (*P2PServer, error) {
 	listener, err := net.ListenTCP("tcp", saddr)
@@ -52,6 +72,10 @@ func NewP2PServer(saddr *net.TCPAddr) (*P2PServer, error) {
 
 	return &P2PServer{
 		sconn: listener,
+		conns: make(model.Conns),
+		wg:    &sync.WaitGroup{},
+		send:  make(chan *model.Payload, 100),
+		exit:  make(chan bool),
 	}, nil
 }
 
@@ -59,7 +83,7 @@ func NewP2PServer(saddr *net.TCPAddr) (*P2PServer, error) {
 func (s *P2PServer) Listen() {
 	log.Println("Listening on", s.sconn.Addr())
 
-	//go s.sender()
+	go s.p2psender()
 
 	for {
 
@@ -75,12 +99,90 @@ func (s *P2PServer) Listen() {
 			return
 		}
 
-		c := model.NewPeerConn(nil, s.send, tcpAddr)
-		log.Printf("New Connection: %v", c.GetAddr())
+		c := model.NewPeerConn(conn, s.send, tcpAddr)
+		log.Printf("New Connection: %v", tcpAddr)
 
-		// s.conns[tcpAddr.String()] = c
-		// s.receive(conn)
+		s.conns[tcpAddr.String()] = c
+		s.receive(conn)
 	}
+}
+
+func (s *P2PServer) serve(b []byte, c net.Conn) {
+	defer s.wg.Done()
+	msg := &model.Message{}
+	m, err := util.RecvMessage(msg, b)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	log.Println("Receive:", m, "From:", c.RemoteAddr().String())
+
+	conn := s.conns[c.RemoteAddr().String()]
+	conn.Send(&model.Message{
+		Type:    "text",
+		Content: "Hello client!",
+	})
+}
+
+func (s *P2PServer) receive(c net.Conn) {
+	defer c.Close()
+	s.wg.Add(1)
+	defer s.wg.Done()
+
+	log.Println("Client:", c.RemoteAddr().String())
+	for {
+		select {
+		case <-s.exit:
+			log.Println("TCP exit [receive]")
+			return
+		default:
+		}
+
+		buf := make([]byte, 1024)
+		n, err := c.Read(buf)
+		if err != nil {
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
+				continue
+			}
+			delete(s.conns, c.RemoteAddr().String())
+			log.Print(err)
+			return
+		}
+		s.wg.Add(1)
+		go s.serve(buf[:n], c)
+	}
+}
+
+// NewServer -
+func NewServer(addr *net.TCPAddr) (*P2PServer, error) {
+	listener, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &P2PServer{
+		sconn: listener,
+		conns: make(model.Conns),
+		wg:    &sync.WaitGroup{},
+		send:  make(chan *model.Payload, 100),
+		exit:  make(chan bool),
+	}, nil
+}
+
+// CreateConn -
+func (s *P2PServer) CreateConn(sAddr net.Addr) (model.Conn, error) {
+	if sAddr == nil {
+		return nil, errors.New("Conns addr must not be nil")
+	}
+
+	tcpAddr, ok := sAddr.(*net.TCPAddr)
+	if !ok {
+		return nil, errors.New("could not assert net.Addr to *net.UDPAddr")
+	}
+
+	c := s.conns[tcpAddr.String()]
+
+	return c, nil
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,15 +297,15 @@ func (s *Server) Listen() {
 			continue
 		}
 
-		tcpAddr, ok := conn.RemoteAddr().(*net.TCPAddr)
-		if !ok {
-			log.Print("could not assert net.Addr to *net.TCPAddr")
-			return
-		}
+		// tcpAddr, ok := conn.RemoteAddr().(*net.TCPAddr)
+		// if !ok {
+		// 	log.Print("could not assert net.Addr to *net.TCPAddr")
+		// 	return
+		// }
 
-		c := model.NewPeerConn(nil, s.send, tcpAddr)
-		log.Printf("New Connection: %v", c.GetAddr())
-		s.conns[tcpAddr.String()] = c
+		// c := model.NewPeerConn(nil, s.send, tcpAddr)
+		// log.Printf("New Connection: %v", c.GetAddr())
+		// s.conns[tcpAddr.String()] = c
 
 		s.receive(conn)
 	}
@@ -263,18 +365,18 @@ func (s *Server) receive(c net.Conn) {
 }
 
 // CreateConn create connection to server
-func (s *Server) CreateConn(sAddr net.Addr) (model.Conn, error) {
-	if sAddr == nil {
-		return nil, errors.New("Conns addr must not be nil")
-	}
+// func (s *Server) CreateConn(sAddr net.Addr) (model.Conn, error) {
+// 	if sAddr == nil {
+// 		return nil, errors.New("Conns addr must not be nil")
+// 	}
 
-	tcpAddr, ok := sAddr.(*net.TCPAddr)
-	if !ok {
-		return nil, errors.New("could not assert net.Addr to *net.UDPAddr")
-	}
+// 	tcpAddr, ok := sAddr.(*net.TCPAddr)
+// 	if !ok {
+// 		return nil, errors.New("could not assert net.Addr to *net.UDPAddr")
+// 	}
 
-	c := model.NewPeerConn(nil, s.send, tcpAddr)
-	s.conns[sAddr.String()] = c
+// 	c := model.NewPeerConn(nil, s.send, tcpAddr)
+// 	// s.conns[sAddr.String()] = c
 
-	return c, nil
-}
+// 	return c, nil
+// }

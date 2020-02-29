@@ -2,10 +2,12 @@ package model
 
 import "net"
 
+// P2PIFServer -
 type P2PIFServer interface {
 	Status()
 	Stop()
 	Listen()
+	CreateConn(net.Addr) (Conn, error)
 }
 
 // IFServer tcp server

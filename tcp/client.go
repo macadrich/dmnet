@@ -24,10 +24,11 @@ type Client struct {
 
 // P2PClient -
 type P2PClient struct {
-	c    net.Conn
-	s    model.P2PIFServer
-	self *model.Peer
-	peer *model.Peer
+	c     net.Conn
+	s     model.P2PIFServer
+	sAddr *net.TCPAddr
+	self  *model.Peer
+	peer  *model.Peer
 }
 
 // GetServer -
@@ -72,11 +73,43 @@ func NewTCPClient(username, saddress string) (*P2PClient, error) {
 	p := &model.Peer{}
 
 	return &P2PClient{
-		c:    c,
-		s:    s,
-		self: self,
-		peer: p,
+		c:     c,
+		s:     s,
+		sAddr: saddr,
+		self:  self,
+		peer:  p,
 	}, nil
+}
+
+// StartP2P start peer to peer connection
+func (c *P2PClient) StartP2P() error {
+
+	s := c.GetServer()
+	go s.Listen()
+
+	sConn, err := s.CreateConn(c.sAddr)
+	if err != nil {
+		return err
+	}
+
+	// set conn
+	// c.SetServerConn(sConn)
+
+	// // start listening
+	// go s.Listen()
+
+	// send greeting message to server
+	sConn.Send(&model.Message{
+		Type:    "connect",
+		Content: "test",
+	})
+
+	// saddr, err := net.ResolveTCPAddr("tcp", c.sAddr.String())
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,65 +131,6 @@ func handleRequest(conn, nd net.Conn) {
 
 	go copyIO(conn, nd)
 	go copyIO(nd, conn)
-}
-
-// StartP2P start peer to peer connection
-func (c *P2PClient) StartP2P() error {
-
-	s := c.GetServer()
-	go s.Listen()
-
-	// sConn, err := s.CreateConn(c.sAddr)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// // set conn
-	// c.SetServerConn(sConn)
-
-	// // start listening
-	// go s.Listen()
-
-	// // send greeting message to server
-	// sConn.Send(&model.Message{
-	// 	Type:    "connect",
-	// 	Content: c.GetServer().Addr(),
-	// })
-
-	// saddr, err := net.ResolveTCPAddr("tcp", c.sAddr.String())
-	// if err != nil {
-	// 	return err
-	// }
-
-	// s, err := NewP2PServer(saddr)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// for {
-	// 	conn, err := s.sconn.Accept()
-	// 	if err != nil {
-	// 		return nil
-	// 	}
-	// 	go handleRequest(conn, c.c)
-	// }
-
-	/*
-		listener, err := net.Listen("tcp", util.GenPort())
-		if err != nil {
-			return nil
-		}
-
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				return nil
-			}
-			go handleRequest(conn, c.c)
-		}
-	*/
-
-	return nil
 }
 
 // Status -
