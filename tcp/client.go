@@ -54,6 +54,10 @@ func (c *P2PClient) SetServerConn(conn model.Conn) {
 
 // NewTCPClient -
 func NewTCPClient(username, saddress string) (*P2PClient, error) {
+	serverAddr, err := net.ResolveTCPAddr("tcp", saddress)
+	if err != nil {
+		return nil, err
+	}
 
 	// connect to server
 	c, err := net.Dial("tcp", saddress)
@@ -81,17 +85,17 @@ func NewTCPClient(username, saddress string) (*P2PClient, error) {
 	return &P2PClient{
 		c:     c,
 		s:     s,
-		sAddr: saddr,
+		sAddr: serverAddr,
 		self:  self,
 		peer:  p,
 	}, nil
 }
 
-func receive(c net.Conn) {
-	defer c.Close()
+func (c *P2PClient) receive() {
+	defer c.c.Close()
 	for {
 		buf := make([]byte, 1024)
-		n, err := c.Read(buf)
+		n, err := c.c.Read(buf)
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
 				continue
@@ -112,20 +116,19 @@ func (c *P2PClient) StartP2P() error {
 	// start listening
 	go s.Listen()
 
-	msg := &model.Message{
-		Type:    "connect",
-		Content: c.sAddr.String(),
+	conn, err := s.CreateConn(c.c, c.sAddr)
+	if err != nil {
+		panic(err)
 	}
-	b, _ := util.SendMessage(msg)
-	c.c.Write(b)
 
-	receive(c.c)
+	c.SetServerConn(conn)
 
-	// send greeting message to server
-	// sConn.Send(&model.Message{
-	// 	Type:    "connect",
-	// 	Content: "test",
-	// })
+	go c.receive()
+
+	conn.Send(&model.Message{
+		Type:    "connect",
+		Content: c.c.RemoteAddr().String(),
+	})
 
 	return nil
 }

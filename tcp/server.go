@@ -25,6 +25,7 @@ type Server struct {
 
 // P2PServer -
 type P2PServer struct {
+	c     *net.TCPConn
 	sconn *net.TCPListener
 	conns model.Conns
 	wg    *sync.WaitGroup
@@ -54,13 +55,23 @@ func (s *P2PServer) p2psender() {
 		case p := <-s.send:
 			if p != nil {
 				log.Println("[p2psender()] Send:", string(p.Bytes), p.Addr.String())
-				conn := s.conns[p.Addr.String()]
-				n, err := conn.GetTCPConn().Write(p.Bytes)
-				if err != nil {
-					panic(err)
-				}
 
-				log.Println("Send success:", n)
+				conn := s.conns[p.Addr.String()]
+				c := conn.GetConn()
+
+				c.Write(p.Bytes)
+
+				// conn := s.conns[p.Addr.String()]
+				// err := conn.Send(&model.Message{
+				// 	Type:    "text",
+				// 	Content: "Hello client:" + p.Addr.String(),
+				// })
+				// // n, err := conn.GetTCPConn().Write(p.Bytes)
+				// if err != nil {
+				// 	panic(err)
+				// }
+
+				log.Println("Send success:")
 				// conn := s.conns[p.Addr.String()]
 				// c := conn.GetTCPConn()
 				// c.Write(p.Bytes)
@@ -77,6 +88,7 @@ func NewP2PServer(saddr *net.TCPAddr) (*P2PServer, error) {
 	}
 
 	return &P2PServer{
+		c:     nil,
 		sconn: listener,
 		conns: make(model.Conns),
 		wg:    &sync.WaitGroup{},
@@ -126,9 +138,8 @@ func (s *P2PServer) serve(b []byte, c net.Conn) {
 	conn := s.conns[c.RemoteAddr().String()]
 	conn.Send(&model.Message{
 		Type:    "text",
-		Content: "Hello client!",
+		Content: "[serve] Hello: " + c.RemoteAddr().String(),
 	})
-
 }
 
 func (s *P2PServer) receive(c net.Conn) {
@@ -177,7 +188,7 @@ func NewServer(addr *net.TCPAddr) (*P2PServer, error) {
 }
 
 // CreateConn -
-func (s *P2PServer) CreateConn(sAddr net.Addr) (model.Conn, error) {
+func (s *P2PServer) CreateConn(conn net.Conn, sAddr net.Addr) (model.Conn, error) {
 	if sAddr == nil {
 		return nil, errors.New("Conns addr must not be nil")
 	}
@@ -189,8 +200,8 @@ func (s *P2PServer) CreateConn(sAddr net.Addr) (model.Conn, error) {
 
 	log.Println("Server address:", tcpAddr.String())
 
-	c := s.conns[tcpAddr.String()]
-
+	c := model.NewPeerConn(conn, s.send, tcpAddr)
+	s.conns[tcpAddr.String()] = c
 	return c, nil
 }
 
@@ -252,13 +263,13 @@ func (s *Server) listenrecv() {
 		case p := <-s.send:
 			if p != nil {
 				log.Println("Send:", string(p.Bytes))
-				c := s.conns[p.Addr.String()]
+				//c := s.conns[p.Addr.String()]
 
-				n, err := c.GetTCPConn().Write(p.Bytes)
-				if err != nil {
-					return
-				}
-				log.Println("write:", n)
+				// n, err := c.GetTCPConn().Write(p.Bytes)
+				// if err != nil {
+				// 	return
+				// }
+				log.Println("write:")
 
 			}
 		}

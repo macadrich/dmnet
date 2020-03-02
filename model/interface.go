@@ -7,7 +7,7 @@ type P2PIFServer interface {
 	Status()
 	Stop()
 	Listen()
-	CreateConn(net.Addr) (Conn, error)
+	CreateConn(net.Conn, net.Addr) (Conn, error)
 }
 
 // IFServer tcp server
@@ -15,7 +15,7 @@ type IFServer interface {
 	Addr() string
 	Stop()
 	Listen()
-	CreateConn(net.Addr) (Conn, error)
+	CreateConn(net.Conn, net.Addr) (Conn, error)
 }
 
 // IFClient tcp client

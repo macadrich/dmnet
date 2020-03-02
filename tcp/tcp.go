@@ -25,13 +25,6 @@ func New(mode, address string) (dmnet.DMNet, error) {
 			return nil, err
 		}
 
-		// server, err := NewTCPServer(mode, tcpaddr, nil)
-		// if err != nil {
-		// 	return nil, err
-		// }
-
-		// server.Listen()
-
 		server, err := NewServer(tcpaddr)
 		if err != nil {
 			return nil, err

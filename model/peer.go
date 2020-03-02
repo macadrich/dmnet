@@ -56,6 +56,11 @@ func (tcp *PeerConn) GetAddr() net.Addr {
 	return tcp.addr
 }
 
+// GetConn connection to response client
+func (tcp *PeerConn) GetConn() net.Conn {
+	return tcp.conn
+}
+
 // Send message send to peer
 func (tcp *PeerConn) Send(msg *Message) error {
 	b, err := util.SendMessage(msg)
@@ -67,16 +72,11 @@ func (tcp *PeerConn) Send(msg *Message) error {
 	return nil
 }
 
-// GetTCPConn -
-func (tcp *PeerConn) GetTCPConn() net.Conn {
-	return tcp.conn
-}
-
 // NewPeerConn -
-func NewPeerConn(c net.Conn, send chan *Payload, addr *net.TCPAddr) *PeerConn {
+func NewPeerConn(conn net.Conn, send chan *Payload, addr *net.TCPAddr) *PeerConn {
 	return &PeerConn{
 		send: send,
 		addr: addr,
-		conn: c,
+		conn: conn,
 	}
 }
