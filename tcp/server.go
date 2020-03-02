@@ -47,6 +47,8 @@ func (s *P2PServer) Status() {
 
 // p2psender -
 func (s *P2PServer) p2psender() {
+	s.wg.Add(1)
+	defer s.wg.Done()
 	for {
 		select {
 		case <-s.exit:
@@ -60,21 +62,7 @@ func (s *P2PServer) p2psender() {
 				c := conn.GetConn()
 
 				c.Write(p.Bytes)
-
-				// conn := s.conns[p.Addr.String()]
-				// err := conn.Send(&model.Message{
-				// 	Type:    "text",
-				// 	Content: "Hello client:" + p.Addr.String(),
-				// })
-				// // n, err := conn.GetTCPConn().Write(p.Bytes)
-				// if err != nil {
-				// 	panic(err)
-				// }
-
 				log.Println("Send success:")
-				// conn := s.conns[p.Addr.String()]
-				// c := conn.GetTCPConn()
-				// c.Write(p.Bytes)
 			}
 		}
 	}
@@ -121,7 +109,8 @@ func (s *P2PServer) Listen() {
 		log.Printf("New Connection: %v", tcpAddr)
 
 		s.conns[tcpAddr.String()] = c
-		s.receive(conn)
+		s.wg.Add(1)
+		go s.receive(conn)
 	}
 }
 
@@ -143,8 +132,6 @@ func (s *P2PServer) serve(b []byte, c net.Conn) {
 }
 
 func (s *P2PServer) receive(c net.Conn) {
-	defer c.Close()
-	s.wg.Add(1)
 	defer s.wg.Done()
 
 	log.Println("Client:", c.RemoteAddr().String())

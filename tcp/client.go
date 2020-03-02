@@ -54,6 +54,7 @@ func (c *P2PClient) SetServerConn(conn model.Conn) {
 
 // NewTCPClient -
 func NewTCPClient(username, saddress string) (*P2PClient, error) {
+	var s *P2PServer
 	serverAddr, err := net.ResolveTCPAddr("tcp", saddress)
 	if err != nil {
 		return nil, err
@@ -65,13 +66,20 @@ func NewTCPClient(username, saddress string) (*P2PClient, error) {
 		return nil, err
 	}
 
-	saddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
-	if err != nil {
-		return nil, err
-	}
+	err = util.GetPortConn(5, func() error {
+		saddr, err := net.ResolveTCPAddr("tcp", util.GenPort())
+		if err != nil {
+			return err
+		}
 
-	// listen server
-	s, err := NewP2PServer(saddr)
+		// listen server
+		s, err = NewP2PServer(saddr)
+		if err != nil {
+			return err
+		}
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
