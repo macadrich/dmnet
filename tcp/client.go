@@ -1,26 +1,16 @@
 package tcp
 
 import (
-	"bufio"
-	"dmnet/util"
-	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/macadrich/dmnet/util"
 
 	"github.com/macadrich/dmnet/model"
 )
-
-// Client base client
-type Client struct {
-	c                  net.Conn
-	self               *model.Peer
-	peer               *model.Peer
-	sAddr              *net.TCPAddr
-	sConn              model.Conn // server TCPConn
-	pConn              model.Conn // peer TCPConn
-	registeredCallback func(model.IFClient)
-	messageCallback    func(model.IFClient, string)
-}
 
 // P2PClient -
 type P2PClient struct {
@@ -45,6 +35,14 @@ func (c *P2PClient) Status() {
 // Stop -
 func (c *P2PClient) Stop() {
 	c.s.Stop()
+}
+
+// SignalInterupt -
+func (c *P2PClient) SignalInterupt() {
+	exit := make(chan os.Signal)
+	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
+	log.Print(<-exit)
+	c.Stop()
 }
 
 // SetServerConn -
@@ -139,70 +137,4 @@ func (c *P2PClient) StartP2P() error {
 	})
 
 	return nil
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-func copyIO(src, dest net.Conn) {
-	defer src.Close()
-	defer dest.Close()
-
-	msg := bufio.NewScanner(src)
-	for msg.Scan() {
-		fmt.Println("Message:", msg.Text())
-		dest.Write([]byte(msg.Text() + "\n"))
-		src.Write([]byte(msg.Text() + "\n"))
-	}
-}
-
-func handleRequest(conn, nd net.Conn) {
-	fmt.Println("new client")
-
-	go copyIO(conn, nd)
-	go copyIO(nd, conn)
-}
-
-// Status -
-func (c *Client) Status() {
-	log.Println("IP:", c.self.Addr)
-}
-
-// OnRegistered -
-func (c *Client) OnRegistered(f func(model.IFClient)) {
-	c.registeredCallback = f
-}
-
-// OnMessage -
-func (c *Client) OnMessage(f func(model.IFClient, string)) {
-	c.messageCallback = f
-}
-
-// SetServerConn -
-func (c *Client) SetServerConn(conn model.Conn) {
-	c.sConn = conn
-}
-
-// GetServer -
-// func (c *Client) GetServer() model.IFServer {
-// 	return c.server
-// }
-
-// GetSelf -
-func (c *Client) GetSelf() *model.Peer {
-	return c.self
-}
-
-// GetPeer -
-func (c *Client) GetPeer() *model.Peer {
-	return c.peer
-}
-
-// SetPeer -
-func (c *Client) SetPeer(p *model.Peer) {
-	c.peer = p
-}
-
-// Stop -
-func (c *Client) Stop() {
-	//c.server.Stop()
 }

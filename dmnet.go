@@ -4,6 +4,7 @@ package dmnet
 type DMNet interface {
 	Status()
 	Stop()
+	SignalInterupt()
 }
 
 // Network network config

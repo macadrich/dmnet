@@ -25,16 +25,13 @@ func rndzServer() {
 
 func p2pClient() {
 	log.Println("[ P2P ]")
-	c, err := tcp.New(tcp.DMNETP2P, "0.0.0.0:9001")
+	c, err := tcp.New(tcp.DMNETP2P, "175.176.79.16:44246")
 	if err != nil {
 		panic(err)
 	}
 
-	exit := make(chan os.Signal)
-	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
-	log.Print(<-exit)
-	c.Stop()
-	log.Println("Done.")
+	c.SignalInterupt()
+
 }
 
 func main() {
