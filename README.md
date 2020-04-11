@@ -16,8 +16,14 @@ cd dmnet
 ```
 dep ensure
 ```
-2. Run as a server
+2. Execute command
 
+server
 ```
 go run cli/main.go -mode=server -addr=0.0.0.0
+```
+
+client
+```
+go run cli/main.go -mode=client -addr=0.0.0.0
 ```
