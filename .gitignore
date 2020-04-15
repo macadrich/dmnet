@@ -16,3 +16,5 @@ vendor/
 
 # macos hidden file
 *.DS_Store
+dmnet
+main
