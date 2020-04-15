@@ -18,7 +18,7 @@ dep ensure
 ```
 2. Execute command
 
-- server
+- <strong>server</strong>
 ```
 go run cli/main.go -mode=server -addr=0.0.0.0
 ```
