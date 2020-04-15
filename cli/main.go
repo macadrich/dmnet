@@ -20,6 +20,11 @@ var (
 	addr    = flag.String("addr", "", "IP address of rendezvous server")
 )
 
+func messageCallback(item []byte) {
+
+	log.Println("Messsage:", string(item))
+}
+
 // setup rendezvous server connection
 // @addr - rendezvous address listening
 func rndzServer(addr string) {
@@ -28,6 +33,8 @@ func rndzServer(addr string) {
 	if err != nil {
 		panic(err)
 	}
+
+	s.OnMessage(messageCallback)
 
 	s.SignalInterupt()
 }
@@ -41,6 +48,8 @@ func p2pClient(addr string) {
 		panic(err)
 	}
 
+	c.OnMessage(messageCallback)
+
 	c.SignalInterupt()
 }
 
@@ -49,6 +58,7 @@ func main() {
 
 	if len(os.Args) <= 2 || len(os.Args) > 3 {
 		log.Printf("usage: -mode=server -addr=0.0.0.0 \n")
+		log.Printf("usage: -mode=client -addr=0.0.0.0:9001 \n")
 		return
 	}
 
@@ -58,7 +68,7 @@ func main() {
 	switch *mode {
 	case "client":
 		if *addr != "" {
-			ipaddr = *addr + clientTCPPORT
+			ipaddr = *addr
 			p2pClient(ipaddr)
 		}
 		return

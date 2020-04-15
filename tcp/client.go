@@ -1,25 +1,41 @@
 package tcp
 
 import (
+	"dmnet/util"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/macadrich/dmnet/util"
-
 	"github.com/macadrich/dmnet/model"
 )
 
+// Client base client
+type Client struct {
+	c               net.Conn
+	self            *model.Peer
+	peer            *model.Peer
+	sAddr           *net.TCPAddr
+	sConn           model.Conn // server TCPConn
+	pConn           model.Conn // peer TCPConn
+	messageCallback func([]byte)
+}
+
 // P2PClient -
 type P2PClient struct {
-	c     net.Conn
-	s     model.P2PIFServer
-	sConn model.Conn
-	sAddr *net.TCPAddr
-	self  *model.Peer
-	peer  *model.Peer
+	c               net.Conn
+	s               model.P2PIFServer
+	sConn           model.Conn
+	sAddr           *net.TCPAddr
+	self            *model.Peer
+	peer            *model.Peer
+	messageCallback func([]byte)
+}
+
+// OnMessage -
+func (c *P2PClient) OnMessage(f func([]byte)) {
+	c.messageCallback = f
 }
 
 // GetServer -
@@ -89,11 +105,12 @@ func NewTCPClient(username, saddress string) (*P2PClient, error) {
 	p := &model.Peer{}
 
 	return &P2PClient{
-		c:     c,
-		s:     s,
-		sAddr: serverAddr,
-		self:  self,
-		peer:  p,
+		c:               c,
+		s:               s,
+		sAddr:           serverAddr,
+		self:            self,
+		peer:            p,
+		messageCallback: func([]byte) {},
 	}, nil
 }
 
@@ -110,7 +127,7 @@ func (c *P2PClient) receive() {
 			log.Print(err)
 			return
 		}
-		log.Println("message:", string(buf[:n]))
+		c.messageCallback(buf[:n])
 	}
 }
 

@@ -8,6 +8,7 @@ type P2PIFServer interface {
 	Stop()
 	Listen()
 	CreateConn(net.Conn, net.Addr) (Conn, error)
+	OnMessage(func([]byte))
 }
 
 // IFServer tcp server
@@ -16,6 +17,7 @@ type IFServer interface {
 	Stop()
 	Listen()
 	CreateConn(net.Conn, net.Addr) (Conn, error)
+	OnMessage(func([]byte))
 }
 
 // IFClient tcp client
@@ -25,6 +27,5 @@ type IFClient interface {
 	SetPeer(*Peer)
 	GetSelf() *Peer
 	Stop()
-	OnRegistered(func(IFClient))
-	OnMessage(func(IFClient, string))
+	OnMessage(func([]byte))
 }

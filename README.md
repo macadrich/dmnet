@@ -23,7 +23,16 @@ dep ensure
 go run cli/main.go -mode=server -addr=0.0.0.0
 ```
 
-- client
+- client1
 ```
-go run cli/main.go -mode=client -addr=0.0.0.0
+go run cli/main.go -mode=client -addr=0.0.0.0:9001
+// random port will generate for client1
+// e.g listening on [::]:44246
+```
+
+- client2 connect to client1
+```
+go run cli/main.go -mode=client -addr=0.0.0.0:44246
+// random port will generate for client2
+// e.g listening on [::]:41007
 ```

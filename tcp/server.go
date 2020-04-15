@@ -4,22 +4,39 @@ import (
 	"errors"
 	"log"
 	"net"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 
 	"github.com/macadrich/dmnet/model"
 	"github.com/macadrich/dmnet/util"
 )
 
+// Server -
+type Server struct {
+	sAddr           *net.TCPAddr
+	p2paddr         string
+	p2pc            net.Listener
+	conns           model.Conns
+	isP2P           bool
+	wg              *sync.WaitGroup
+	send            chan *model.Payload
+	exit            chan bool
+	messageCallback func([]byte)
+}
+
 // P2PServer -
 type P2PServer struct {
-	sconn *net.TCPListener
-	conns model.Conns
-	wg    *sync.WaitGroup
-	send  chan *model.Payload
-	exit  chan bool
+	c               *net.TCPConn
+	sconn           *net.TCPListener
+	conns           model.Conns
+	wg              *sync.WaitGroup
+	send            chan *model.Payload
+	exit            chan bool
+	messageCallback func([]byte)
+}
+
+// OnMessage -
+func (s *P2PServer) OnMessage(f func([]byte)) {
+	s.messageCallback = f
 }
 
 // Stop -
@@ -32,14 +49,6 @@ func (s *P2PServer) Stop() {
 // Status -
 func (s *P2PServer) Status() {
 	log.Println("IP:", s.sconn.Addr().String())
-}
-
-// SignalInterupt -
-func (s *P2PServer) SignalInterupt() {
-	exit := make(chan os.Signal)
-	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
-	log.Print(<-exit)
-	s.Stop()
 }
 
 // p2psender -
@@ -73,11 +82,13 @@ func NewP2PServer(saddr *net.TCPAddr) (*P2PServer, error) {
 	}
 
 	return &P2PServer{
-		sconn: listener,
-		conns: make(model.Conns),
-		wg:    &sync.WaitGroup{},
-		send:  make(chan *model.Payload, 100),
-		exit:  make(chan bool),
+		c:               nil,
+		sconn:           listener,
+		conns:           make(model.Conns),
+		wg:              &sync.WaitGroup{},
+		send:            make(chan *model.Payload, 100),
+		exit:            make(chan bool),
+		messageCallback: func([]byte) {},
 	}, nil
 }
 
@@ -162,11 +173,12 @@ func NewServer(addr *net.TCPAddr) (*P2PServer, error) {
 	}
 
 	return &P2PServer{
-		sconn: listener,
-		conns: make(model.Conns),
-		wg:    &sync.WaitGroup{},
-		send:  make(chan *model.Payload, 100),
-		exit:  make(chan bool),
+		sconn:           listener,
+		conns:           make(model.Conns),
+		wg:              &sync.WaitGroup{},
+		send:            make(chan *model.Payload, 100),
+		exit:            make(chan bool),
+		messageCallback: func([]byte) {},
 	}, nil
 }
 

@@ -5,6 +5,7 @@ type DMNet interface {
 	Status()
 	Stop()
 	SignalInterupt()
+	OnMessage(func([]byte))
 }
 
 // Network network config
