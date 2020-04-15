@@ -18,19 +18,19 @@ dep ensure
 ```
 2. Execute command
 
-- server
+- <strong>server</strong>
 ```
 go run cli/main.go -mode=server -addr=0.0.0.0
 ```
 
-- client1
+- <strong>client1</strong>
 ```
 go run cli/main.go -mode=client -addr=0.0.0.0:9001
 // random port will generate for client1
 // e.g listening on [::]:44246
 ```
 
-- client2 connect to client1
+- <strong>client2</strong> connect to <strong>client1</strong>
 ```
 go run cli/main.go -mode=client -addr=0.0.0.0:44246
 // random port will generate for client2
